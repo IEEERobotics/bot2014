@@ -16,6 +16,13 @@ class Rail_Mover(object):
         
         self.rail_DMCC = pyDMCC.DMCC(1)    
         self.rail_motor = self.rail_DMCC.motors[motor_num]
+
+    @lib.api_call
+    def get_position(self):
+        return self.rail_motor.position
+
+
+
     @lib.api_call 
     def Orientor(self,Position):
         

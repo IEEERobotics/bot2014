@@ -16,17 +16,7 @@ from bot.hardware.complex_hardware.QRCode2 import QRCode2
 from bot.hardware.complex_hardware.QRCode2 import Block
 from bot.hardware.complex_hardware.partial_qr import *
 
-def find_name(symlink):
-    # find where symlink is pointing (/dev/vide0, video1, etc)
-    cmd = "readlink -f /dev/" + symlink 
-    process = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE)
-    out = process.communicate()[0]
 
-    #extract ints from name video0, etc
-    nums = [int(x) for x in out if x.isdigit()]
-    # There should nto be more than one digit
-    interface_num = nums[0]    
-    return interface_num
 
 class Camera(object):
 
@@ -42,7 +32,7 @@ class Camera(object):
         udev_name = cam_config["udev_name"]
         print udev_name
 
-        cam_num = find_name(udev_name)
+        cam_num = self.find_cam_num(udev_name)
         
         # extract calib data from cam_config
         self.a = cam_config["a"]
@@ -59,7 +49,22 @@ class Camera(object):
         self.scanner = zbar.ImageScanner()
         self.scanner.parse_config('enable')
         
-        
+    def find_name(self, symlink):
+            # find where symlink is pointing (/dev/vide0, video1, etc)
+        cmd = "readlink -f /dev/" + symlink 
+        process = subprocess.Popen(cmd.split(), 
+                                   stdout=subprocess.PIPE)
+        out = process.communicate()[0]
+
+        #extract ints from name video0, etc
+        nums = [int(x) for x in out if x.isdigit()]
+        # There should nto be more than one digit
+        if len(nums) != 0:
+            print "error with camera interfaces"
+            return
+        interface_num = nums[0]    
+        return interface_num        
+
     def apply_filters(self, frame):
         """Attempts to improve viewing by applying filters """
         # grayscale

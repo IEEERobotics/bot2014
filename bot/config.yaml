@@ -49,8 +49,8 @@ omni_drive_motors: {
     south: { board_num: 2, motor_num: 2 , invert: True},
     east: { board_num: 0, motor_num: 2 , invert: True},
     west: { board_num: 0, motor_num: 1 },
-    north: { board_num: 2, motor_num: 1 }
-
+    north: { board_num: 2, motor_num: 1 },
+    camera: generic_cam
 }
 
 IR : {

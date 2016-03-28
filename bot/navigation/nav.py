@@ -8,6 +8,8 @@ from pid import PID
 import os.path
 import yaml
 
+from bot.hardware.complex_hardware import Camera
+
 bound = lambda x, l, u: l if x < l else u if x > u else x
 
 MAX_VALUE = 800
@@ -33,6 +35,32 @@ class Navigation(object):
         self.logger = lib.get_logger()
         mapping = ["EXIT", "west", "east", "EXIT"]
         self.rail_cars_side = mapping[rail_cars]
+
+        # camera for checking block
+        c_config = self.config["generic_cam"]
+        self.cam = Camera(c_config)
+
+    @lib.api_call
+    def check_current_car(self, expected_color):
+        """ Verifies that car is currenly facing a bin"""
+        frame = self.cam.get_current_frame()
+        qr_list = self.cam.get_qr_list(frame)
+        
+        # Should not happen unless far away
+        if len(qr_list) > 2:
+            return False
+        
+        # assure that at least 2 are same
+        colors = {"red":0, "blue": 0, "green":0, "yellow":0}
+        for q in qr_list:
+            colors[q.value] += 1
+
+        if any( i >= 2 for i in colors.itervalues()):
+            return True
+
+        # If none of these conditions met, assum not lined up
+            return False        
+
 
     def stop_unused_motors(self, direction):
         direction = direction.lower()

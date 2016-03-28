@@ -63,6 +63,11 @@ class RobotArm(object):
 
         self.hopper = [None, None, None, None]
 
+    @lib.api_call
+    def get_props(self):
+        print "rail pos", self.rail.get_position()
+        
+
     @property
     def joints(self):
         return self.__joints
@@ -74,6 +79,8 @@ class RobotArm(object):
         if len(vals) == 5:
             self.__joints = vals
         else:
+            vals[:] = [0 for i in a if i < 0]
+            vals[:] = [180 for i in a if i > 180]
             self.__joints[:len(vals)] = vals
         print "Joints to be sent: ", vals
         self.servo_cape.transmit_block([0] + self.__joints)
@@ -128,8 +135,8 @@ class RobotArm(object):
         
         # Correction constants for P(ID) controller.
         # unlikely that we'll bother using I or D
-        p_x = 10
-        p_y = 10
+        p_x = 50
+        p_y = 6
 
         while True:
             ret = self.cam.QRSweep()
@@ -141,7 +148,7 @@ class RobotArm(object):
                 dy = ret.tvec[1]
                 
                 if abs(dx) > 0.1:
-                    self.joints[0] += p_x * dx
+                    self.move_rail(p_x * dx)
                 if abs(dy) > 0.1:
                     self.joints[3] += p_y * dy
                 #print "Joints = ", self.joints
@@ -553,7 +560,11 @@ class RobotArm(object):
     @lib.api_call
     def orient(self, pos):
         self.rail.Orientor(pos)
-    
+
+    @lib.api_call
+    def move_rail(self, displacement):
+        return self.rail.DisplacementMover(displacement)
+ 
     @lib.api_call
     def GrabQR(self):
         self.cam.QRSweep()
